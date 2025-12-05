@@ -21,7 +21,8 @@ The application is built using a multi-tier architecture:
 3. **Database**: Amazon DynamoDB for storing employee data.
 4. **File Storage**: Amazon S3 for storing files such as employee photos.
 
-![emp-app-diagram-resized](https://github.com/user-attachments/assets/4311e492-9580-4e5f-864b-17c1b7abdec9)
+![Employee Directory Architecture](./assets/aws-employee-directory-diagram.png)
+
 
 ## Prerequisites
 
