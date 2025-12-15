@@ -51,6 +51,11 @@ The migration followed a "Re-platform" strategy, replacing AWS-specific services
 ### 1. Infrastructure as Code (Terraform)
 The entire GCP infrastructure is provisioned using Terraform, ensuring reproducibility and version control.
 - **Modular Design:** Resources are organized into logical files (`compute.tf`, `database.tf`, `storage.tf`, `vpc.tf`).
+- **Simplified Networking:** Unlike AWS where subnets are zonal, GCP subnets are **regional**. This allowed us to use a single subnet (`employee-web-app-subnet`) to host instances across multiple zones, simplifying the network topology while maintaining high availability.
+- **Security:**
+  - Instances run in private subnets with no public IP addresses.
+The entire GCP infrastructure is provisioned using Terraform, ensuring reproducibility and version control.
+- **Modular Design:** Resources are organized into logical files (`compute.tf`, `database.tf`, `storage.tf`, `vpc.tf`).
 - **Security:** 
   - Instances run in private subnets with no public IP addresses.
   - **Cloud NAT** provides secure outbound internet access for updates and package installation.
