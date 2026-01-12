@@ -1,4 +1,4 @@
-# Employee Directory – Multi-Cloud Migration Project
+# Enterprise App Migration to Google Cloud (GCP)
 
 This repository demonstrates a **real-world cloud migration project**, where a legacy 3-tier web application is deployed on AWS and then re-platformed to Google Cloud Platform using modern Infrastructure as Code and cloud-native services.
 
@@ -103,7 +103,7 @@ flowchart TB
 
 ```mermaid
 flowchart TB
-    U[User Browser] --> LB[Cloud HTTP(S) Load Balancer]
+    U[User Browser] --> LB[Cloud HTTPS Load Balancer]
 
     LB --> MIG[Managed Instance Group]
 
@@ -159,8 +159,6 @@ This repository demonstrates:
 - **Scalable compute architectures**
 - **Application refactoring for cloud services**
 - **Real migration problem-solving**
-
-It represents the same type of migration work commonly performed for real client production systems.
 
 ---
 
