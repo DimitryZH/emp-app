@@ -25,8 +25,6 @@ jobs:
            uses: actions/checkout@v4
 
          # Authenticate to Google Cloud using Workload Identity Federation.
-         # Replace WORKLOAD_IDENTITY_PROVIDER and SERVICE_ACCOUNT with real values
-         # created in the enterprise-app-migration project.
          - name: Configure GCP authentication
            uses: google-github-actions/auth@v2
            with:
@@ -49,10 +47,13 @@ jobs:
               PROJECT_ID: ${{ env.PROJECT_ID }}
               REGION: ${{ env.REGION }}
               ARTIFACT_REPO: ${{ env.ARTIFACT_REPO }}
+              CI_SA: ${{ secrets.GCP_WORKLOAD_IDENTITY_SA }}
            run: |
               IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/${ARTIFACT_REPO}/enterprise-app:${GITHUB_SHA}"
-              echo "Building and pushing image ${IMAGE} via Cloud Build"
-              gcloud builds submit --tag "$IMAGE" .
+              echo "Building and pushing image ${IMAGE} via Cloud Build using ${CI_SA}"
+              gcloud builds submit \
+                --service-account="${CI_SA}" \
+                --tag "$IMAGE" .
               echo "IMAGE=${IMAGE}" >> $GITHUB_ENV
 
          - name: Terraform init & apply for Cloud Run infra
