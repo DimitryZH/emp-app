@@ -162,15 +162,30 @@ flowchart LR
 
 ---
 
-## Next Phase: Serverless Modernization
+## Option 2: Serverless Modernization with Cloud Run
 
-A second migration phase will introduce a **Cloud Run** deployment model:
+The second migration phase introduces a **Cloud Run** deployment model, implemented under:
 
 ```
 /GCP-Cloud-Run/
 ```
 
-This phase will demonstrate containerization, serverless scaling, and further cost optimization.
+### Target Serverless Design
+
+- Flask application containerized via the Dockerfile in `GCP/app/` and deployed to Cloud Run as the `enterprise-app` service.
+- Container images stored in **Artifact Registry** (for example: `enterprise-app-repo` in project `enterprise-app-migration`).
+- Cloud Run service runs with a dedicated service account, granting access to:
+  - **Firestore (Datastore mode)** for employee records.
+  - **Cloud Storage** for employee photos.
+- Configuration and sensitive values provided through environment variables and (optionally) Secret Manager.
+
+### CI/CD & Environments
+
+- GitHub Actions workflow `[.github/workflows/cloud-run-deploy.yml](.github/workflows/cloud-run-deploy.yml:1)` builds images from the Cloud Run Dockerfile and pushes them to Artifact Registry.
+- The workflow then updates the Cloud Run service to use the new image tag (derived from the Git commit SHA) and runs Terraform for core infra.
+- Environment strategy can include separate dev, stage, and prod projects or prefixes (for example: `enterprise-dev`, `enterprise-stage`, `enterprise-prod`), with corresponding CI/CD environments.
+
+This Cloud Run option further reduces operational overhead by delegating autoscaling and instance management to a fully managed, serverless platform, while preserving the same functional behavior and data model defined in this migration design.
 
 ---
 
@@ -178,4 +193,3 @@ This phase will demonstrate containerization, serverless scaling, and further co
 
 **Dmitry Zhuravlev**  
 Cloud & DevOps Engineer
-

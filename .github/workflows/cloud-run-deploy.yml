@@ -1,0 +1,78 @@
+name: Deploy Enterprise App to Cloud Run
+
+on:
+   push:
+      branches:
+         - main
+
+env:
+   PROJECT_ID: "enterprise-app-migration"
+   REGION: "us-central1"
+   SERVICE_NAME: "enterprise-app"
+   ARTIFACT_REPO: "enterprise-app-repo"
+
+jobs:
+   build-and-deploy:
+      name: Build and Deploy to Cloud Run
+      runs-on: ubuntu-latest
+
+      permissions:
+         contents: read
+         id-token: write
+
+      steps:
+         - name: Checkout repository
+           uses: actions/checkout@v4
+
+         # Authenticate to Google Cloud using Workload Identity Federation.
+         # Replace WORKLOAD_IDENTITY_PROVIDER and SERVICE_ACCOUNT with real values
+         # created in the enterprise-app-migration project.
+         - name: Configure GCP authentication
+           uses: google-github-actions/auth@v2
+           with:
+              workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+              service_account: ${{ secrets.GCP_WORKLOAD_IDENTITY_SA }}
+
+         - name: Set up gcloud SDK
+           uses: google-github-actions/setup-gcloud@v2
+           with:
+              project_id: ${{ env.PROJECT_ID }}
+
+         - name: Configure gcloud defaults
+           run: |
+              gcloud config set project "${PROJECT_ID}"
+              gcloud config set run/region "${REGION}"
+
+         - name: Build and push container image with Cloud Build
+           working-directory: GCP/app
+           env:
+              PROJECT_ID: ${{ env.PROJECT_ID }}
+              REGION: ${{ env.REGION }}
+              ARTIFACT_REPO: ${{ env.ARTIFACT_REPO }}
+           run: |
+              IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/${ARTIFACT_REPO}/enterprise-app:${GITHUB_SHA}"
+              echo "Building and pushing image ${IMAGE} via Cloud Build"
+              gcloud builds submit --tag "$IMAGE" .
+              echo "IMAGE=${IMAGE}" >> $GITHUB_ENV
+
+         - name: Terraform init & apply for Cloud Run infra
+           working-directory: GCP-Cloud-Run/terraform
+           env:
+              GOOGLE_PROJECT: ${{ env.PROJECT_ID }}
+           run: |
+              terraform init -input=false
+              terraform apply -auto-approve -input=false
+
+         - name: Update Cloud Run service to new image
+           env:
+              PROJECT_ID: ${{ env.PROJECT_ID }}
+              REGION: ${{ env.REGION }}
+              SERVICE_NAME: ${{ env.SERVICE_NAME }}
+              IMAGE: ${{ env.IMAGE }}
+           run: |
+              echo "Deploying image ${IMAGE} to Cloud Run service ${SERVICE_NAME} in ${REGION}"
+              gcloud run services update "${SERVICE_NAME}" \
+                --project="${PROJECT_ID}" \
+                --region="${REGION}" \
+                --image="${IMAGE}" \
+                --platform=managed

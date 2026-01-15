@@ -33,19 +33,25 @@ Migrate a production-style web application from AWS to GCP while:
 │   └── terraform/            # AWS Infrastructure as Code
 │       └── README.md         # AWS Terraform project documentation
 │
-├── GCP/                      # GCP migration using Compute Engine + MIG
+├── GCP/                      # GCP migration using Compute Engine + MIG (Option 1)
 │   ├── app/                  # Refactored Flask application for GCP
 │   ├── assets/               # GCP diagrams
 │   ├── terraform/            # GCP Infrastructure as Code
 │   ├── migration.md          # AWS → GCP migration design & architecture
 │   └── deployment_gce.md     # Step-by-step GCE deployment guide
 │
+├── GCP-Cloud-Run/            # GCP Cloud Run serverless deployment (Option 2)
+│   ├── ROADMAP.md            # Cloud Run architecture, CI/CD, and migration roadmap
+│   └── terraform/            # Cloud Run Terraform stack (service account, Artifact Registry, Cloud Run)
+│
 ├── FlaskApp.zip              # Packaged Flask app archive (used by some guides)
 │
 └── README.md                 # This file
 ```
 
-> Note: A second phase of this project targets a **GCP Cloud Run** (serverless) migration. That implementation is referenced in the docs as `/GCP-Cloud-Run/` and is planned as a future extension of this repository.
+> Note: This project now includes two GCP deployment options:
+> - **Option 1 – Compute Engine + Managed Instance Group**, under `GCP/`
+> - **Option 2 – Cloud Run (serverless containers)**, under `GCP-Cloud-Run/`
 
 ---
 
