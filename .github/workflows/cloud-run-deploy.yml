@@ -50,9 +50,10 @@ jobs:
               CI_SA: ${{ secrets.GCP_WORKLOAD_IDENTITY_SA }}
            run: |
               IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/${ARTIFACT_REPO}/enterprise-app:${GITHUB_SHA}"
-              echo "Building and pushing image ${IMAGE} via Cloud Build using ${CI_SA}"
+              BUILD_SA="projects/${PROJECT_ID}/serviceAccounts/${CI_SA}"
+              echo "Building and pushing image ${IMAGE} via Cloud Build using ${BUILD_SA}"
               gcloud builds submit \
-                --service-account="${CI_SA}" \
+                --service-account="${BUILD_SA}" \
                 --gcs-log-dir="gs://${PROJECT_ID}_cloudbuild/logs" \
                 --tag "$IMAGE" .
               echo "IMAGE=${IMAGE}" >> "$GITHUB_ENV"
