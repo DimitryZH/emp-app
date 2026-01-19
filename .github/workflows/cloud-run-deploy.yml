@@ -53,9 +53,9 @@ jobs:
               echo "Building and pushing image ${IMAGE} via Cloud Build using ${CI_SA}"
               gcloud builds submit \
                 --service-account="${CI_SA}" \
-                --logging=CLOUD_LOGGING_ONLY \
+                --gcs-log-dir="gs://${PROJECT_ID}_cloudbuild/logs" \
                 --tag "$IMAGE" .
-              echo "IMAGE=${IMAGE}" >> $GITHUB_ENV
+              echo "IMAGE=${IMAGE}" >> "$GITHUB_ENV"
 
          - name: Terraform init & apply for Cloud Run infra
            working-directory: GCP-Cloud-Run/terraform
