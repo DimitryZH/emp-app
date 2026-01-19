@@ -53,6 +53,7 @@ jobs:
               echo "Building and pushing image ${IMAGE} via Cloud Build using ${CI_SA}"
               gcloud builds submit \
                 --service-account="${CI_SA}" \
+                --logging=CLOUD_LOGGING_ONLY \
                 --tag "$IMAGE" .
               echo "IMAGE=${IMAGE}" >> $GITHUB_ENV
 
