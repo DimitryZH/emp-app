@@ -2,6 +2,10 @@
 
 This document provides a step-by-step guide to deploy the Enterprise App on **Google Cloud Platform using Compute Engine and Managed Instance Groups**. The deployment is fully automated using **Terraform** and a startup script.
 
+Architecture diagram for the GCP Compute Engine deployment:
+
+![GCP Architecture](./assets/gcp-diagram.png)
+
 ---
 
 ## Prerequisites
@@ -190,4 +194,3 @@ The next modernization step will migrate this deployment to **Cloud Run**, demon
 
 **Dmitry Zhuravlev**  
 Cloud & DevOps Engineer
-

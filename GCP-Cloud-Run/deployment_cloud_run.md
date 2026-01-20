@@ -1,13 +1,13 @@
 # GCP Cloud Run Deployment Guide
 
-This document provides a step-by-step guide to deploy the Enterprise App on **Google Cloud Platform using Cloud Run (serverless containers)**. This is the **Option 2** migration path, complementing the **Compute Engine + Managed Instance Group** deployment described in [`GCP/deployment_gce.md`](GCP/deployment_gce.md:1).
+This document provides a step-by-step guide to deploy the Enterprise App on **Google Cloud Platform using Cloud Run (serverless containers)**. This is the **Option 2** migration path, complementing the **Compute Engine + Managed Instance Group** deployment described in [`GCP/deployment_gce.md`](../GCP/deployment_gce.md).
 
 The Cloud Run deployment is implemented using:
 
-- Containerized Flask app under [`GCP/app`](GCP/app:1)
-- Infrastructure as Code via Terraform under [`GCP-Cloud-Run/terraform`](GCP-Cloud-Run/terraform/main.tf:1)
-- CI/CD with GitHub Actions and Workload Identity Federation in [`.github/workflows/cloud-run-deploy.yml`](.github/workflows/cloud-run-deploy.yml:1)
-- Architecture and design details in [`GCP-Cloud-Run/ROADMAP.md`](GCP-Cloud-Run/ROADMAP.md:1)
+- Containerized Flask app under [`GCP/app`](../GCP/app)
+- Infrastructure as Code via Terraform under [`GCP-Cloud-Run/terraform`](terraform/main.tf)
+- CI/CD with GitHub Actions and Workload Identity Federation in [`.github/workflows/cloud-run-deploy.yml`](../.github/workflows/cloud-run-deploy.yml)
+- Architecture and design details in [`GCP-Cloud-Run/ROADMAP.md`](ROADMAP.md)
 
 ---
 
@@ -67,7 +67,7 @@ gcloud services enable \
   monitoring.googleapis.com
 ```
 
-These APIs are referenced directly or indirectly by Terraform in [`GCP-Cloud-Run/terraform/main.tf`](GCP-Cloud-Run/terraform/main.tf:1) and by the CI/CD workflow in [`.github/workflows/cloud-run-deploy.yml`](.github/workflows/cloud-run-deploy.yml:1).
+These APIs are referenced directly or indirectly by Terraform in [`GCP-Cloud-Run/terraform/main.tf`](terraform/main.tf) and by the CI/CD workflow in [`.github/workflows/cloud-run-deploy.yml`](../.github/workflows/cloud-run-deploy.yml).
 
 ---
 
@@ -79,13 +79,13 @@ The Cloud Run deployment uses the GCP-optimized Enterprise App under [`GCP/app`]
 
 The production Dockerfile for Cloud Run resides at:
 
-- [`GCP/app/Dockerfile`](GCP/app/Dockerfile:1)
+- [`GCP/app/Dockerfile`](../GCP/app/Dockerfile)
 
 Key characteristics (as implemented during this migration):
 
 - Base image: `python:3.11-slim`
 - Working directory: `/app`
-- Dependencies installed from [`GCP/app/requirements.txt`](GCP/app/requirements.txt:1)
+- Dependencies installed from [`GCP/app/requirements.txt`](../GCP/app/requirements.txt)
 - Application code copied: `application.py`, `config.py`, `database_datastore.py`, and the `templates/` directory
 - Entrypoint uses **Gunicorn** to serve the Flask app, listening on `0.0.0.0:$PORT` where `PORT` is injected by Cloud Run
 - Logs are written to stdout/stderr for integration with Cloud Logging
@@ -120,10 +120,10 @@ Note: In Cloud Run, GCP credentials are provided via the service account. Locall
 
 The Cloud Run infrastructure is defined under:
 
-- [`GCP-Cloud-Run/terraform/main.tf`](GCP-Cloud-Run/terraform/main.tf:1)
-- [`GCP-Cloud-Run/terraform/variables.tf`](GCP-Cloud-Run/terraform/variables.tf:1)
-- [`GCP-Cloud-Run/terraform/outputs.tf`](GCP-Cloud-Run/terraform/outputs.tf:1)
-- [`GCP-Cloud-Run/terraform/terraform.tfvars`](GCP-Cloud-Run/terraform/terraform.tfvars:1)
+- [`GCP-Cloud-Run/terraform/main.tf`](terraform/main.tf)
+- [`GCP-Cloud-Run/terraform/variables.tf`](terraform/variables.tf)
+- [`GCP-Cloud-Run/terraform/outputs.tf`](terraform/outputs.tf)
+- [`GCP-Cloud-Run/terraform/terraform.tfvars`](terraform/terraform.tfvars)
 
 Update `terraform.tfvars` with your project and environment values. For the `enterprise-app-migration` baseline, the file was created with values similar to:
 
@@ -134,7 +134,7 @@ environment        = "dev"          # or "stage" / "prod" for additional environ
 photos_bucket_name = "enterprise-app-photos-784001prod"
 ```
 
-These variables are consumed in [`GCP-Cloud-Run/terraform/main.tf`](GCP-Cloud-Run/terraform/main.tf:1) to parameterize the Cloud Run service, Artifact Registry repository, runtime service account, and Cloud Storage bucket.
+These variables are consumed in [`GCP-Cloud-Run/terraform/main.tf`](terraform/main.tf) to parameterize the Cloud Run service, Artifact Registry repository, runtime service account, and Cloud Storage bucket.
 
 ---
 
@@ -214,9 +214,9 @@ You should see values such as the Cloud Run service name, region, and URL (for e
 
 Continuous delivery for the Cloud Run option is defined in:
 
-- [`.github/workflows/cloud-run-deploy.yml`](.github/workflows/cloud-run-deploy.yml:1)
+- [`.github/workflows/cloud-run-deploy.yml`](../.github/workflows/cloud-run-deploy.yml)
 
-This workflow builds the container image from [`GCP/app`](GCP/app:1), pushes it to Artifact Registry, and then updates the Cloud Run service.
+This workflow builds the container image from [`GCP/app`](../GCP/app), pushes it to Artifact Registry, and then updates the Cloud Run service.
 
 ### 7.1 Workload Identity Federation (GitHub → GCP)
 
@@ -233,20 +233,20 @@ During this migration, **Workload Identity Federation (OIDC)** was configured in
    - `GCP_WORKLOAD_IDENTITY_PROVIDER` – full resource name of the Workload Identity Provider
    - `GCP_WORKLOAD_IDENTITY_SA` – email of the CI service account
 
-These are consumed in the "Configure GCP authentication" step inside [`.github/workflows/cloud-run-deploy.yml`](.github/workflows/cloud-run-deploy.yml:1).
+These are consumed in the "Configure GCP authentication" step inside [`.github/workflows/cloud-run-deploy.yml`](../.github/workflows/cloud-run-deploy.yml).
 
 ### 7.2 Build and Deploy Flow
 
 On push to the main branch, the workflow:
 
 1. Authenticates to GCP using the Workload Identity Provider and CI service account.
-2. Uses **Cloud Build** to build and push the container image from [`GCP/app`](GCP/app:1) to the Artifact Registry repository created by Terraform.
+2. Uses **Cloud Build** to build and push the container image from [`GCP/app`](../GCP/app) to the Artifact Registry repository created by Terraform.
 3. Runs `gcloud run services update` to point the `enterprise-app` Cloud Run service to the newly built image (tagged, for example, with `${GITHUB_SHA}`).
 
 
 Github Actions workflow run showing successful Cloud Run deployment:
 
-[`GCP-Cloud-Run/assets/workflow_succeeded.png`](./GCP-Cloud-Run/assets/workflow_succeeded.png)
+[`GCP-Cloud-Run/assets/workflow_succeeded.png`](assets/workflow_succeeded.png)
 
 
 This pattern decouples **infrastructure provisioning** (Terraform, run by an operator) from **application rollout** (GitHub Actions, triggered by commits).
@@ -275,7 +275,7 @@ gcloud run services add-iam-policy-binding "$SERVICE" \
 
 Granting public access to Cloud Run service via IAM:
 
-[`GCP-Cloud-Run/assets/grant-access.gif`](./GCP-Cloud-Run/assets/grant-access.gif)
+[`GCP-Cloud-Run/assets/grant-access.gif`](assets/grant-access.gif)
 
 
 This IAM binding change is part of the operational setup performed during this migration. For private deployments, instead grant `roles/run.invoker` to specific identities (users, groups, or service accounts).
@@ -343,9 +343,9 @@ By following this guide, you have deployed:
 - A **GitHub Actions** pipeline using **Workload Identity Federation** to:
   - Build and push container images via Cloud Build
   - Update the Cloud Run service to new revisions
-- Infrastructure provisioned and managed by **Terraform** under [`GCP-Cloud-Run/terraform`](GCP-Cloud-Run/terraform/main.tf:1)
+- Infrastructure provisioned and managed by **Terraform** under [`GCP-Cloud-Run/terraform`](terraform/main.tf)
 
-This Cloud Run deployment realizes the **Option 2** migration path described in [`README.md`](README.md), standing alongside the Compute Engine deployment in [`GCP/deployment_gce.md`](GCP/deployment_gce.md:1) as a complete, production-ready solution.
+This Cloud Run deployment realizes the **Option 2** migration path described in [`README.md`](../README.md), standing alongside the Compute Engine deployment in [`GCP/deployment_gce.md`](../GCP/deployment_gce.md) as a complete, production-ready solution.
 
 ---
 

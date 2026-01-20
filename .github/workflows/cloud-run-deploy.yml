@@ -1,9 +1,9 @@
 name: Deploy Enterprise App to Cloud Run
 
-#on:
-#   push:
-#      branches:
-#         - main
+on:
+   push:
+      branches:
+         - main
 
 env:
    PROJECT_ID: "enterprise-app-migration"

@@ -2,7 +2,7 @@
 
 This document provides a step-by-step guide to deploy the Enterprise App on **Amazon Web Services (AWS)** using **EC2, an Application Load Balancer, Auto Scaling, DynamoDB, and S3**. The deployment is automated using **Terraform** and a cloud-init style **user data script**.
 
-This AWS environment represents the **legacy / baseline deployment** for the migration story in this repository. The same Enterprise App is later re-platformed onto more modern architectures on Google Cloud (see [`GCP/deployment_gce.md`](GCP/deployment_gce.md) and [`GCP-Cloud-Run/deployment_cloud_run.md`](GCP-Cloud-Run/deployment_cloud_run.md)).
+This AWS environment represents the **legacy / baseline deployment** for the migration story in this repository. The same Enterprise App is later re-platformed onto more modern architectures on Google Cloud (see [`GCP/deployment_gce.md`](../GCP/deployment_gce.md) and [`GCP-Cloud-Run/deployment_cloud_run.md`](../GCP-Cloud-Run/deployment_cloud_run.md)).
 
 ---
 
@@ -15,7 +15,7 @@ Before starting, ensure you have:
 - **Terraform** installed (v1.3+ recommended)
 - Basic familiarity with AWS regions and IAM
 
-This guide assumes you are working from the repository root and that the AWS baseline code resides under [`AWS/`](AWS/app/application.py).
+This guide assumes you are working from the repository root and that the AWS baseline code resides in this [`AWS`](.) folder.
 
 ---
 
@@ -44,7 +44,7 @@ Terraform reads credentials from the same locations as the AWS CLI (shared crede
 The AWS deployment is a classic multi-tier web application:
 
 - **Frontend / Web Tier**: Flask web app running on EC2 instances behind an **Application Load Balancer**
-- **Application Tier**: Python/Flask code under [`AWS/app`](AWS/app/application.py)
+- **Application Tier**: Python/Flask code under [`AWS/app`](app/application.py)
 - **Data Tier**:
   - **Amazon DynamoDB** table for employee records
   - **Amazon S3** bucket for employee photos
@@ -53,7 +53,7 @@ The AWS deployment is a classic multi-tier web application:
   - **Security groups** for EC2 and the load balancer
   - **IAM roles** attached directly to instances for access to DynamoDB and S3
 
-Terraform definitions for this baseline live under [`AWS/terraform`](AWS/terraform/main.tf) and include EC2, VPC, IAM, DynamoDB, S3, and load balancing resources.
+Terraform definitions for this baseline live under [`AWS/terraform`](terraform/main.tf) and include EC2, VPC, IAM, DynamoDB, S3, and load balancing resources.
 
 Architecture diagram for the baseline AWS deployment:
 
@@ -65,13 +65,13 @@ Architecture diagram for the baseline AWS deployment:
 
 The key Terraform files for the AWS deployment are:
 
-- Provider and core configuration: [`AWS/terraform/main.tf`](AWS/terraform/main.tf)
-- Global variables and outputs: [`AWS/terraform/vars.tf`](AWS/terraform/vars.tf)
-- EC2, Auto Scaling, and Load Balancer: [`AWS/terraform/ec2.tf`](AWS/terraform/ec2.tf)
-- S3 bucket and policy: [`AWS/terraform/s3.tf`](AWS/terraform/s3.tf)
-- IAM roles and policies: [`AWS/terraform/iam.tf`](AWS/terraform/iam.tf)
-- DynamoDB table: [`AWS/terraform/dynamodb.tf`](AWS/terraform/dynamodb.tf)
-- VPC, subnets, and networking: [`AWS/terraform/vpc.tf`](AWS/terraform/vpc.tf)
+- Provider and core configuration: [`AWS/terraform/main.tf`](terraform/main.tf)
+- Global variables and outputs: [`AWS/terraform/vars.tf`](terraform/vars.tf)
+- EC2, Auto Scaling, and Load Balancer: [`AWS/terraform/ec2.tf`](terraform/ec2.tf)
+- S3 bucket and policy: [`AWS/terraform/s3.tf`](terraform/s3.tf)
+- IAM roles and policies: [`AWS/terraform/iam.tf`](terraform/iam.tf)
+- DynamoDB table: [`AWS/terraform/dynamodb.tf`](terraform/dynamodb.tf)
+- VPC, subnets, and networking: [`AWS/terraform/vpc.tf`](terraform/vpc.tf)
 
 You do not need to modify these files to complete a basic deployment, but you may wish to review them to understand the legacy design and how it differs from the hardened GCP architectures.
 
@@ -79,15 +79,15 @@ You do not need to modify these files to complete a basic deployment, but you ma
 
 ## Step 4 – Configure Terraform Variables
 
-Default variables for the AWS deployment are defined in [`AWS/terraform/vars.tf`](AWS/terraform/vars.tf). The key values are:
+Default variables for the AWS deployment are defined in [`AWS/terraform/vars.tf`](terraform/vars.tf). The key values are:
 
 - `region` – AWS region for all resources (default: `ap-east-1`)
 - `instance_type` – EC2 instance type for the web tier (default: `t3.micro`)
 
 For a simple deployment using defaults, you can proceed without changes. To customize, you can either:
 
-1. Edit the defaults in [`AWS/terraform/vars.tf`](AWS/terraform/vars.tf:1), **or**
-2. Create a `terraform.tfvars` file in [`AWS/terraform`](AWS/terraform/main.tf) with values like:
+1. Edit the defaults in [`AWS/terraform/vars.tf`](terraform/vars.tf), **or**
+2. Create a `terraform.tfvars` file in [`AWS/terraform`](terraform/main.tf) with values like:
 
 ```hcl
 region        = "us-east-1"
@@ -141,19 +141,19 @@ Terraform will provision, in the selected AWS region:
    - Security group for the Application Load Balancer (HTTP ingress)
    - Security group for EC2 instances (allowing traffic from the load balancer)
 
- 3. **S3 Bucket for Photos**
-    - S3 bucket for employee photos, defined in [`AWS/terraform/s3.tf`](AWS/terraform/s3.tf)
+3. **S3 Bucket for Photos**
+   - S3 bucket for employee photos, defined in [`AWS/terraform/s3.tf`](terraform/s3.tf)
    - Bucket policy granting the application IAM role permissions on the bucket
 
- 4. **DynamoDB Table**
-    - DynamoDB table for storing employee records, defined in [`AWS/terraform/dynamodb.tf`](AWS/terraform/dynamodb.tf)
+4. **DynamoDB Table**
+   - DynamoDB table for storing employee records, defined in [`AWS/terraform/dynamodb.tf`](terraform/dynamodb.tf)
 
- 5. **IAM Roles and Instance Profile**
-    - IAM role for EC2 instances with permissions to access DynamoDB and S3, defined in [`AWS/terraform/iam.tf`](AWS/terraform/iam.tf)
+5. **IAM Roles and Instance Profile**
+   - IAM role for EC2 instances with permissions to access DynamoDB and S3, defined in [`AWS/terraform/iam.tf`](terraform/iam.tf)
    - Instance profile attached to the EC2 launch template
 
 6. **EC2 Launch Template and Auto Scaling Group**
-    - Launch template defined in [`AWS/terraform/ec2.tf`](AWS/terraform/ec2.tf)
+   - Launch template defined in [`AWS/terraform/ec2.tf`](terraform/ec2.tf)
    - User data script that:
      - Downloads the application package (`FlaskApp.zip`) from S3
      - Installs Python and dependencies
@@ -168,15 +168,15 @@ Terraform will provision, in the selected AWS region:
 
      - Starts the Flask app bound to port 80
 
-    - Auto Scaling Group (ASG) across two subnets, with minimum and maximum capacity (e.g., 2–4 instances)
-    - Scaling policy that targets average CPU utilization (see `aws_autoscaling_policy` in [`AWS/terraform/ec2.tf`](AWS/terraform/ec2.tf))
+   - Auto Scaling Group (ASG) across two subnets, with minimum and maximum capacity (e.g., 2–4 instances)
+   - Scaling policy that targets average CPU utilization (see `aws_autoscaling_policy` in [`AWS/terraform/ec2.tf`](terraform/ec2.tf))
 
- 7. **Application Load Balancer (ALB)**
-    - ALB defined in [`AWS/terraform/ec2.tf`](AWS/terraform/ec2.tf)
+7. **Application Load Balancer (ALB)**
+   - ALB defined in [`AWS/terraform/ec2.tf`](terraform/ec2.tf)
    - Target group and listener on port 80
    - Health checks for instances in the Auto Scaling Group
 
-When `terraform apply` completes, Terraform outputs the public endpoint of the Application Load Balancer via the `employee-web-app-endpoint` output in [`AWS/terraform/vars.tf`](AWS/terraform/vars.tf).
+When `terraform apply` completes, Terraform outputs the public endpoint of the Application Load Balancer via the `employee-web-app-endpoint` output in [`AWS/terraform/vars.tf`](terraform/vars.tf).
 
 ---
 
@@ -219,22 +219,20 @@ Example UI views from the baseline AWS deployment:
 
 ![Load Balancer View](https://github.com/user-attachments/assets/9bcb02ef-c711-41c7-a3d1-438b0789e924)
 
-On the `/info` tab you can also see instance metadata and trigger the CPU stress feature:
 
-![Instance Info & CPU Stress](https://github.com/user-attachments/assets/4d0176af-60bd-4871-bdfb-b8e22567ffb4)
 
-The application code, templates, and utility functions are located under [`AWS/app`](AWS/app/application.py), including:
+The application code, templates, and utility functions are located under [`AWS/app`](app/application.py), including:
 
-- Flask entrypoint: [`AWS/app/application.py`](AWS/app/application.py)
-- Configuration: [`AWS/app/config.py`](AWS/app/config.py)
-- DynamoDB data access layer: [`AWS/app/database_dynamo.py`](AWS/app/database_dynamo.py)
-- HTML templates: [`AWS/app/templates`](AWS/app/templates/main.html)
+- Flask entrypoint: [`AWS/app/application.py`](app/application.py)
+- Configuration: [`AWS/app/config.py`](app/config.py)
+- DynamoDB data access layer: [`AWS/app/database_dynamo.py`](app/database_dynamo.py)
+- HTML templates: [`AWS/app/templates`](app/templates/main.html)
 
 ---
 
 ## Step 9 – Validate Auto Scaling Behavior
 
-The AWS baseline uses an Auto Scaling Group with a CPU-based scaling policy (see `aws_autoscaling_policy` in [`AWS/terraform/ec2.tf`](AWS/terraform/ec2.tf)). To observe scaling in action:
+The AWS baseline uses an Auto Scaling Group with a CPU-based scaling policy (see `aws_autoscaling_policy` in [`AWS/terraform/ec2.tf`](terraform/ec2.tf)). To observe scaling in action:
 
 1. Open the Enterprise App in your browser via the load balancer URL.
 2. Navigate to the **`/info`** tab in the UI.
@@ -260,7 +258,7 @@ Review the plan carefully and confirm with `yes`. Terraform will remove:
 - EC2 instances, launch template, and Auto Scaling Group
 - Application Load Balancer, target group, and listener
 - DynamoDB table
-- S3 bucket for photos (including objects, because `force_destroy = true` is set in [`AWS/terraform/s3.tf`](AWS/terraform/s3.tf))
+- S3 bucket for photos (including objects, because `force_destroy = true` is set in [`AWS/terraform/s3.tf`](terraform/s3.tf))
 - IAM roles and instance profile used by the application
 - VPC, subnets, and security groups
 
@@ -278,7 +276,7 @@ By following this guide, you have deployed the **Enterprise App** on AWS with:
 - **DynamoDB** as the primary data store for employee records
 - An **S3 bucket** for storing employee photos
 - **IAM roles and policies** granting the app access to DynamoDB and S3
-- Infrastructure fully defined as code under [`AWS/terraform`](AWS/terraform/main.tf)
+- Infrastructure fully defined as code under [`AWS/terraform`](terraform/main.tf)
 
-This environment serves as the **legacy baseline** for the migration journey documented in this repository. Subsequent guides ([`GCP/deployment_gce.md`](GCP/deployment_gce.md) and [`GCP-Cloud-Run/deployment_cloud_run.md`](GCP-Cloud-Run/deployment_cloud_run.md)) show how the same Enterprise App is re-platformed to more secure and modern architectures on Google Cloud while preserving its core functionality.
+This environment serves as the **legacy baseline** for the migration journey documented in this repository. Subsequent guides ([`GCP/deployment_gce.md`](../GCP/deployment_gce.md) and [`GCP-Cloud-Run/deployment_cloud_run.md`](../GCP-Cloud-Run/deployment_cloud_run.md)) show how the same Enterprise App is re-platformed to more secure and modern architectures on Google Cloud while preserving its core functionality.
 
