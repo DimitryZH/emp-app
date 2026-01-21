@@ -396,14 +396,14 @@ flowchart TB
     U[User Browser] --> HTTPS[Cloud Run HTTPS URL]
 
     %% Cloud Run service
-    subgraph CR["Cloud Run Service: enterprise-app"]
+    subgraph CR["Cloud Run Service"]
         REV[Container Revision]
     end
 
     HTTPS --> REV
 
     %% Runtime data plane
-    REV --> FS[(Firestore (Datastore Mode))]
+    REV --> FS[(Firestore Datastore Mode)]
     REV --> GCS[(Cloud Storage Bucket)]
     REV --> SM[(Secret Manager)]
 
@@ -415,7 +415,8 @@ flowchart TB
     SA --> SM
 
     %% CI/CD and image delivery
-    subgraph CI["CI/CD: GitHub Actions + Cloud Build"]
+    subgraph CI["CI/CD: GitHub Actions"]
+
         GH[GitHub Repository]
         WF[cloud-run-deploy.yml Workflow]
         CB[Cloud Build]

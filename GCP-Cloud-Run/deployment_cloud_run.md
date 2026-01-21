@@ -7,7 +7,7 @@ The Cloud Run deployment is implemented using:
 - Containerized Flask app under [`GCP/app`](../GCP/app)
 - Infrastructure as Code via Terraform under [`GCP-Cloud-Run/terraform`](terraform/main.tf)
 - CI/CD with GitHub Actions and Workload Identity Federation in [`.github/workflows/cloud-run-deploy.yml`](../.github/workflows/cloud-run-deploy.yml)
-- Architecture and design details in [`GCP-Cloud-Run/ROADMAP.md`](ROADMAP.md)
+- Architecture and design details in [`README.md`](../README.md)
 
 ---
 
