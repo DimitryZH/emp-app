@@ -37,7 +37,7 @@ Workload Identity Federation between GitHub and GCP was not configured consisten
 - Provider attribute conditions did not match the actual GitHub repository.
 - `GCP_WORKLOAD_IDENTITY_SA` did not point to the correct CI service account.
 
-[GitHub Actions Settings:](../docs/assets/repository_secrets.png)
+![GitHub Actions Settings:](../docs/assets/repository_secrets.png)
 
 **Resolution**
 
@@ -65,7 +65,7 @@ The **Build and push container image with Cloud Build** step fails. Logs show er
 - `PERMISSION_DENIED: The caller does not have permission to act as service account...`
 
 
-[GitHub Actions logs:](../docs/assets/build_push_perm_denied.png)
+![GitHub Actions logs:](../docs/assets/build_push_perm_denied.png)
 
 **Root Cause**  
 The GitHub CI service account (for example `enterprise-app-github-sa@enterprise-app-migration.iam.gserviceaccount.com`) lacked the IAM roles required to:
@@ -123,7 +123,7 @@ The Cloud Run service `enterprise-app` was deployed as **private** (default), an
 
 2. Refresh the URL and confirm it is now accessible.
 
-This step is illustrated in [`GCP-Cloud-Run/assets/grant_access.gif`](../GCP-Cloud-Run/assets/grant_access.gif).
+This step is illustrated in ![`GCP-Cloud-Run/assets/grant_access.gif`](../GCP-Cloud-Run/assets/grant_access.gif).
 
 **Prevention / Best Practices**
 

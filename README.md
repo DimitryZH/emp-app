@@ -113,7 +113,6 @@ This option removes most server management, delegating scaling and instance life
 
 ## AWS → GCP Migration Design (Option 1 – Compute Engine)
 
-This section consolidates the migration design previously described in `GCP/migration.md`.
 
 ### Migration Strategy
 
@@ -430,8 +429,6 @@ flowchart TB
 ---
 
 ## Option 2: Serverless Modernization with Cloud Run
-
-This section consolidates the design and roadmap previously captured in `GCP-Cloud-Run/ROADMAP.md`.
 
 ### Context & Objectives
 
